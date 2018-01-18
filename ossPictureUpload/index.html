@@ -1,152 +1,208 @@
 <!DOCTYPE html>
 <html>
-<head>
-	<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
-	<title>OSS web直传</title>
-	<link rel="stylesheet" type="text/css" href="style.css"/>
-	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-	
-	<script src="lib/jquery-2.2.0.min.js" type="text/javascript" charset="utf-8"></script>
 
-</head>
-<body>
-<div class="box">
-	<div id="page1">
-		<h4>您所选择的文件列表：</h4>
-		<div id="container">
-			<!--<a id="selectfiles" href="javascript:void(0);" class='btn'>选择文件</a>-->
-			<input type="file" id="selectfiles"  class='btn' value="选择文件">
-			<a id="postfiles" href="javascript:void(0);" class='btn'>开始上传</a>
-			
-		</div>
-		<canvas id="canvas"></canvas>
-		<div  id="preview"></div>
-		<pre id="console"></pre>
-		
-		<p>&nbsp;</p>
-		<ul id="file-list">
-		
-		</ul>
-	</div>
-	<div id="page2">
-		<div id="img_box">
-			<div class="mask"></div>
-			<div id="show"></div>
-			<div class="mask"></div>
-		</div>
-		
-        <button id="sure" calss="btn">确定</button>
-        <button id="quit" calss="btn">取消</button>
-	</div>
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+		<title>OSS web直传</title>
+		<link rel="stylesheet" type="text/css" href="style.css" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
-</div>
-</body>
-<script type="text/javascript" src="lib/crypto1/crypto/crypto.js"></script>
-<script type="text/javascript" src="lib/crypto1/hmac/hmac.js"></script>
-<script type="text/javascript" src="lib/crypto1/sha1/sha1.js"></script>
-<script type="text/javascript" src="lib/base64.js"></script>
-<script type="text/javascript" src="lib/plupload-2.1.2/js/plupload.full.min.js"></script>
+		<script src="lib/jquery-2.2.0.min.js" type="text/javascript" charset="utf-8"></script>
+
+	</head>
+
+	<body>
+		<div class="box">
+			<div id="page1">
+				<h4>您所选择的文件列表：</h4>
+				<div class="upload_box">
+					<div id="ossfile"></div>
+					<div id="container">
+						<span><a id="selectfiles" href="javascript:void(0);" >+</a></span>
+					</div>
+				</div>
+
+				<a id="postfiles" href="javascript:void(0);" class='btn'>开始上传</a>
+				<canvas id="canvas"></canvas>
+				<div id="preview"></div>
+				<pre id="console"></pre>
+
+				<p>&nbsp;</p>
+				<ul id="file-list">
+
+				</ul>
+			</div>
+			<div id="page2">
+				<div id="img_box">
+					<div class="mask"></div>
+					<div id="show"></div>
+					<div class="mask"></div>
+				</div>
+
+				<button id="sure" calss="btn">确定</button>
+				<button id="quit" calss="btn">取消</button>
+			</div>
+
+		</div>
+	</body>
+	<script type="text/javascript" src="lib/crypto1/crypto/crypto.js"></script>
+	<script type="text/javascript" src="lib/crypto1/hmac/hmac.js"></script>
+	<script type="text/javascript" src="lib/crypto1/sha1/sha1.js"></script>
+	<script type="text/javascript" src="lib/base64.js"></script>
+	<script type="text/javascript" src="lib/plupload-2.1.2/js/plupload.full.min.js"></script>
 
 </html>
 <script type="text/javascript">
-	var w=$(window).width();
-	var h=$(window).height();
-	var old_x,old_y;
-	var img_box=document.getElementById("img_box")
-	var show=document.getElementById("show")	
-	var masks=document.getElementsByClassName("mask")
-	var big=document.getElementsByClassName("big")
-	var page1=document.getElementById("page1")
-	var page2=document.getElementById("page2")
-	var btn_sure=document.getElementById("sure")
-	var btn_quit=document.getElementById("quit")
-	var preview=document.getElementById("preview")
-	var l,t;
+	var w = $(window).width();
+	var h = $(window).height();
+	var old_x, old_y;
+	var img_box = document.getElementById("img_box")
+	var show = document.getElementById("show")
+	var masks = document.getElementsByClassName("mask")
+	var big = document.getElementsByClassName("big")
+	var page1 = document.getElementById("page1")
+	var page2 = document.getElementById("page2")
+	var btn_sure = document.getElementById("sure")
+	var btn_quit = document.getElementById("quit")
+	var preview = document.getElementById("preview")
+	var ossfile = document.getElementById("ossfile")
+	var selectfiles = document.getElementById("selectfiles")
+	var l, t;
 	var show_l;
-	var show_x=0,show_y=0;
-	var position={};//记录位置
-        //保存并刷新
-    //画布
-    var canvas = document.getElementById("canvas");
-    var ctx = canvas.getContext("2d");
-    
+	var show_x = 0,
+		show_y = 0;
+	var position = {}; //记录位置
+	//保存并刷新
+	//画布
+	var canvas = document.getElementById("canvas");
+	var ctx = canvas.getContext("2d");
+	var objDel;
 	//qph_test/activity_image/1515742826773MJZtadE6GB.jpg
-	
-           
 </script>
 <script type="text/javascript" src="upload.js"></script>
 <script type="text/javascript">
-	window.onload=function(){
-		var startx,starty;
-		
-        	show.addEventListener("touchstart", function(e) {
-				startx = e.touches[0].pageX - show.offsetLeft;
-				starty = e.touches[0].pageY - show.offsetTop;
-				show.addEventListener("touchmove", function(e) {
-					old_x = e.targetTouches[0].pageX;
-					old_y = e.targetTouches[0].pageY;
-					l = old_x - startx;
-					t = old_y - starty;
-					if(img_flag) { //竖
-						l = 0;
-						if(t > ((imgh / bili) - show_l)) {
-							t = ((imgh / bili) - show_l);
-						}
-						if(t < 0) {
-							t = 0;
-						}
-						show.style.top = t + "px"
-					} else {
+	window.onload = function() {
+		var startx, starty;
+
+		show.addEventListener("touchstart", function(e) {
+			startx = e.touches[0].pageX - show.offsetLeft;
+			starty = e.touches[0].pageY - show.offsetTop;
+			show.addEventListener("touchmove", function(e) {
+				old_x = e.targetTouches[0].pageX;
+				old_y = e.targetTouches[0].pageY;
+				l = old_x - startx;
+				t = old_y - starty;
+				if(img_flag) { //竖
+					l = 0;
+					if(t > ((imgh / bili) - show_l)) {
+						t = ((imgh / bili) - show_l);
+					}
+					if(t < 0) {
 						t = 0;
-						if(l > (w - show_l)) {
-							l = (w - show_l)
-						}
-
-						if(l < 0) {
-							l = 0
-						}
-						show.style.left = l + "px"
 					}
-					set_mask()
-				})
-
-			})
-			show.addEventListener("touchend", function(e) {
-				if(img_flag) {
-					position = {
-						"x": (show.offsetLeft * bili),
-						'y': (show.offsetTop * bili),
-						'w': (imgw)
-					}
+					show.style.top = t + "px"
 				} else {
-					position = {
-						"x": (show.offsetLeft * bili),
-						'y': (show.offsetTop * bili),
-						'w': (imgh)
+					t = 0;
+					if(l > (w - show_l)) {
+						l = (w - show_l)
 					}
+
+					if(l < 0) {
+						l = 0
+					}
+					show.style.left = l + "px"
 				}
+				set_mask()
 			})
-		btn_sure.onclick=function(){
-			page1.style.display="block";
-			page2.style.display="none";
+
+		})
+		show.addEventListener("touchend", function(e) {
+			if(img_flag) {
+				position = {
+					"x": (show.offsetLeft * bili),
+					'y': (show.offsetTop * bili),
+					'w': (imgw)
+				}
+			} else {
+				position = {
+					"x": (show.offsetLeft * bili),
+					'y': (show.offsetTop * bili),
+					'w': (imgh)
+				}
+			}
+		})
+		btn_sure.onclick = function() {
+			page1.style.display = "block";
+			page2.style.display = "none";
 			canvas.width = imgw;
-    		canvas.height = imgw;
-    		//绘制图片
-			ctx.drawImage(img,position.x,position.y,position.w,position.w,0,0,imgw,imgw)
+			canvas.height = imgw;
+			//绘制图片
+			ctx.drawImage(img, position.x, position.y, position.w, position.w, 0, 0, imgw, imgw)
 			//预览
-			preview.appendChild(convertCanvasToImage(canvas))
-//			ctx.drawImage(img, show.offsetLeft, show.offsetTop,show.offsetWidth,show.offsetWidth, 0,0);
-		}
-		btn_quit.onclick=function(){
-			console.log(position)
-			page1.style.display="block";
-			page2.style.display="none";
-		}
+
+			//obj_div.appendChild(convertCanvasToImage(canvas))
+			//obj_div.appendChild(convertCanvasToImage(canvas))
+			document.getElementById(img.getAttribute("data-id")).parentNode.appendChild(convertCanvasToImage(canvas));
+			var img_num = document.getElementById('ossfile').getElementsByTagName("img").length;
+			if(img_num == 3) {
+				console.log("3个")
+				selectfiles.parentNode.style.display = "none"
+			}
+			
+		};
+
 		function convertCanvasToImage(canvas) {
 			var image = new Image();
 			image.src = canvas.toDataURL("image/png");
 			return image;
 		}
+		
+
+		//点击取消裁剪图片
+		var quit = document.getElementById("quit")
+		quit.addEventListener("click", function(e) {
+			//var img = document.getElementById("cutImg")
+			//var page2 = document.getElementById("page2")
+			page2.style.display = "none";
+			page1.style.display = "block";
+			var fileid = img.getAttribute("data-id")
+			var previewSpan = document.getElementById(fileid)
+			img.parentNode.removeChild(img);
+			previewSpan.parentNode.remove();
+			var toremove = '';
+			for(var i in uploader.files) {
+				if(uploader.files[i].id === fileid) {
+					toremove = i;
+				}
+			}
+			uploader.files.splice(toremove, 1);
+			var length = document.getElementById('ossfile').getElementsByTagName("img").length;
+			selectfiles.parentNode.style.display = "block"
+			//console.log(uploader.files, length, that.upload_img, that.is_ok, that.isUpload, "00000000000")
+		})
+		//删除图片
+		ossfile.addEventListener("click", function(ev) {
+			var target = ev.target;
+			while(target !== ossfile) {
+				if(target.tagName.toLowerCase() == 'span') {
+					target.parentNode.remove()
+					var toremove = '';
+					var id = target.getAttribute("data-id");
+					for(var i in uploader.files) {
+						if(uploader.files[i].id === id) {
+							toremove = i;
+						}
+					}
+					uploader.files.splice(toremove, 1);
+					var length = document.getElementById('ossfile').getElementsByTagName("img").length;
+					selectfiles.parentNode.style.display = "block"
+					break;
+				}
+				//target = target.parentNode;
+			}
+		}, false)
+
 	}
+
 	
 </script>
