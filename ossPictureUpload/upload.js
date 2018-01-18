@@ -5,12 +5,10 @@ var policyText = {
 	]
 };
 
-//accessid = 'your id';
-//accesskey = 'your key';
-//host = 'your host';
-var accessid= 'LTAICtr0nMegJbdY';
-var accesskey= 'QPj56xkevySLD4ZkIYAhjfi0nineyc';
-var host = 'http://qipaohui.oss-cn-beijing.aliyuncs.com';
+accessid = 'your id';
+accesskey = 'your key';
+host = 'your host';
+
 var activityPic = 'qph_test/activity_image/'; //存放的文件夹
 
 var imgUrl; //图片返回地址
