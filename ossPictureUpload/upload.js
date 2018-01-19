@@ -17,6 +17,7 @@ var bili; //缩放比
 var imgw, imgh; //图片原始尺寸
 var path = '';
 var img;//剪切显示的大图
+var Orientation;//图片的旋转方向
 var policyBase64 = Base64.encode(JSON.stringify(policyText))
 message = policyBase64;
 var bytes = Crypto.HMAC(Crypto.SHA1, message, accesskey, {
@@ -94,13 +95,15 @@ var uploader = new plupload.Uploader({
 		},
 		BeforeUpload: function(up, file) {
 			set_upload_param(up, file.name)
+			console.log(file)
 		},
 		FilesAdded: function(up, files) {
 			var length = files.length
 			var before_length = document.getElementById('ossfile').getElementsByTagName("img").length;
 			var all_length = before_length + length
 			//console.log(length,before_length,all_length)
-
+			console.log(files[0])
+			var file=files[0]
 			if(length > 1) {
 				alert("每次只能选择一张图片")
 				for(var b = 0; b < length; b++) {
@@ -130,19 +133,55 @@ var uploader = new plupload.Uploader({
 			if(img) {
 				img.parentNode.removeChild(img);
 			}
-
+			var rFilter = /^(image\/jpeg|image\/png)$/i; // 检查图片格式 
+		    if (!rFilter.test(file.type)) { 
+		      alert("请选择jpeg、png格式的图片", false); 
+		      return; 
+		    } 
 			var reader = new FileReader();
 			reader.readAsDataURL(files[0].getNative());
 			reader.onload = (function(e) {
+				
+				//console.log(e.target.exif)
 				var image = new Image();
 				image.src = e.target.result;
 				image.id = "big";
 				//image.setAttribute("data-id",files[0].id); // 设置  
 				image.onload = function() {
-					img_box.appendChild(image)
 					imgw = this.width;
-					imgh = this.height
-					bili = this.width / w
+					imgh = this.height;
+					bili = this.width / w;
+					img_box.appendChild(image)
+					img = document.getElementById("big");
+					
+					EXIF.getData(image, function() {
+			            Orientation = EXIF.getTag(this, 'Orientation');
+			        });
+			        if(Orientation==6){
+						canvas.width = imgh;
+						canvas.height = imgw;
+						
+						//绘制图片
+						//旋转角度以弧度值为参数  
+						//ctx.translate(imgw/20,imgh/20);//设置画布上的(0,0)位置，也就是旋转的中心点
+					    var degree = 1 * 90 * Math.PI / 180; 
+					    ctx.rotate(degree);  
+					    console.log(img)
+					    ctx.drawImage(img, 0, -imgh);
+					    //ctx.restore();//恢复状态
+					    img.parentNode.removeChild(img);
+						img_box.appendChild(convertCanvasToImage(canvas));
+						//预览
+						var x=imgh;
+						imgh=imgw;
+						imgw=x;
+					}
+					img=img_box.getElementsByTagName("img")[0]
+					
+					
+					console.log("w:"+imgw)
+					console.log("h:"+imgh)
+					
 					if(imgw > imgh) {
 						img_flag = false;
 						img_type = 1;
@@ -158,20 +197,20 @@ var uploader = new plupload.Uploader({
 							bili = imgh / h;
 						}
 					}
+					console.log(img_type)
 					page1.style.display = "none";
 					page2.style.display = "block";
-					img = document.getElementById("big");
-					set_page2();
-					set_mask();
-					var obj_div=document.createElement("div")
 					
+					set_page2();//设置显示区
+					set_mask();//设置遮罩层
+					var obj_div=document.createElement("div")
 					var obj_span=document.createElement("span")
 					obj_span.id=files[0].id;
 					obj_span.setAttribute("class","delete")
 					obj_div.appendChild(obj_span)
-					//obj_div.appendChild(convertCanvasToImage(canvas))
 					ossfile.appendChild(obj_div)
 					img.setAttribute("data-id",files[0].id); // 设置 
+					
 				};
 			});
 
@@ -307,3 +346,8 @@ function set_page2() {
 		}
 	}
 }
+function convertCanvasToImage(canvas) {
+			var image = new Image();
+			image.src = canvas.toDataURL("image/png");
+			return image;
+		}

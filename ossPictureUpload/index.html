@@ -8,7 +8,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 		<script src="lib/jquery-2.2.0.min.js" type="text/javascript" charset="utf-8"></script>
-
+		<script src="lib/exif.js" type="text/javascript" charset="utf-8"></script>
 	</head>
 
 	<body>
@@ -23,7 +23,7 @@
 				</div>
 
 				<a id="postfiles" href="javascript:void(0);" class='btn'>开始上传</a>
-				<canvas id="canvas"></canvas>
+				<canvas id="canvas" style="position:fixed;bottom:0;left:0;z-index:999;"></canvas>
 				<div id="preview"></div>
 				<pre id="console"></pre>
 
@@ -40,6 +40,7 @@
 				</div>
 
 				<button id="sure" calss="btn">确定</button>
+				<button id="rotate" calss="btn">旋转</button>
 				<button id="quit" calss="btn">取消</button>
 			</div>
 
@@ -67,6 +68,7 @@
 	var preview = document.getElementById("preview")
 	var ossfile = document.getElementById("ossfile")
 	var selectfiles = document.getElementById("selectfiles")
+	var rotate_btn=document.getElementById("rotate")
 	var l, t;
 	var show_l;
 	var show_x = 0,
@@ -131,6 +133,9 @@
 				}
 			}
 		})
+		rotate_btn.onclick = function() {
+			//img.style.
+		}
 		btn_sure.onclick = function() {
 			page1.style.display = "block";
 			page2.style.display = "none";
@@ -151,11 +156,7 @@
 			
 		};
 
-		function convertCanvasToImage(canvas) {
-			var image = new Image();
-			image.src = canvas.toDataURL("image/png");
-			return image;
-		}
+		
 		
 
 		//点击取消裁剪图片
