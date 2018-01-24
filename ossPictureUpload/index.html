@@ -7,7 +7,7 @@
 		<link rel="stylesheet" type="text/css" href="style.css" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
-		<script src="lib/jquery-2.2.0.min.js" type="text/javascript" charset="utf-8"></script>
+		<!--<script src="lib/jquery-2.2.0.min.js" type="text/javascript" charset="utf-8"></script>-->
 		<script src="lib/exif.js" type="text/javascript" charset="utf-8"></script>
 	</head>
 
@@ -38,10 +38,11 @@
 					<div id="show"></div>
 					<div class="mask"></div>
 				</div>
-
-				<button id="sure" calss="btn">确定</button>
-				<button id="rotate" calss="btn">旋转</button>
-				<button id="quit" calss="btn">取消</button>
+				<p class="btn_box">
+					<button id="sure" class="btn">确定</button>
+					<button id="quit" class="btn">取消</button>
+				</p>
+				
 			</div>
 
 		</div>
@@ -54,8 +55,9 @@
 
 </html>
 <script type="text/javascript">
-	var w = $(window).width();
-	var h = $(window).height();
+	var w = window.innerWidth;
+	var h = window.innerHeight;
+	console.log(w)
 	var old_x, old_y;
 	var img_box = document.getElementById("img_box")
 	var show = document.getElementById("show")
@@ -133,12 +135,11 @@
 				}
 			}
 		})
-		rotate_btn.onclick = function() {
-			//img.style.
-		}
+		
 		btn_sure.onclick = function() {
 			page1.style.display = "block";
 			page2.style.display = "none";
+			ctx.restore();//恢复状态
 			canvas.width = imgw;
 			canvas.height = imgw;
 			//绘制图片

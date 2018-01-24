@@ -5,10 +5,12 @@ var policyText = {
 	]
 };
 
-accessid = 'your id';
-accesskey = 'your key';
-host = 'your host';
-
+//accessid = 'your id';
+//accesskey = 'your key';
+//host = 'your host';
+var host='http://qipaohui.oss-cn-beijing.aliyuncs.com';
+var accessid= 'LTAICtr0nMegJbdY';
+var accesskey= 'QPj56xkevySLD4ZkIYAhjfi0nineyc';
 var activityPic = 'qph_test/activity_image/'; //存放的文件夹
 
 var imgUrl; //图片返回地址
@@ -111,7 +113,7 @@ var uploader = new plupload.Uploader({
 				}
 				return false
 			}
-
+//alert(files[0].origSize)
 			for(var i = 0; i < length; i++) {
 				if(files[i].origSize > 3145728) {
 					alert("图片大小不可超过3M，请重新上传")
@@ -130,6 +132,7 @@ var uploader = new plupload.Uploader({
 			} else if(all_length == 3) {
 				//that.isUpload = false
 			}
+			img=document.getElementById("img_box").getElementsByTagName("img")[0];
 			if(img) {
 				img.parentNode.removeChild(img);
 			}
@@ -153,35 +156,47 @@ var uploader = new plupload.Uploader({
 					bili = this.width / w;
 					img_box.appendChild(image)
 					img = document.getElementById("big");
-					
 					EXIF.getData(image, function() {
 			            Orientation = EXIF.getTag(this, 'Orientation');
 			        });
-			        if(Orientation==6){
-						canvas.width = imgh;
-						canvas.height = imgw;
-						
-						//绘制图片
-						//旋转角度以弧度值为参数  
-						//ctx.translate(imgw/20,imgh/20);//设置画布上的(0,0)位置，也就是旋转的中心点
-					    var degree = 1 * 90 * Math.PI / 180; 
-					    ctx.rotate(degree);  
-					    console.log(img)
-					    ctx.drawImage(img, 0, -imgh);
-					    //ctx.restore();//恢复状态
+			        if(Orientation!=1){
+			        	if(Orientation==6){//旋转90度
+			        		var x=imgh;
+							imgh=imgw;
+							imgw=x;
+							var step=1;//旋转几个90度
+							var ctx_x=0;//画图的原点位置
+							var ctx_y=-imgw;
+							
+						}else if(Orientation==3){
+							alert("3")
+							var step=2;
+							var ctx_x=-imgw;
+							var ctx_y=-imgh;
+							
+						}else if(Orientation==8){
+							alert("8")
+							var x=imgh;
+							imgh=imgw;
+							imgw=x;
+							var step=3;
+							var ctx_x=-imgh;
+							var ctx_y=0;
+							
+						}
+						ctx.restore();//恢复状态
+						canvas.width = imgw;
+						canvas.height = imgh;
+				    	var degree = step * 90 * Math.PI / 180; 
+					    ctx.rotate(degree);  //画布坐标旋转
+					    ctx.drawImage(img, ctx_x, ctx_y);//画图
+					    //替换img
 					    img.parentNode.removeChild(img);
 						img_box.appendChild(convertCanvasToImage(canvas));
-						//预览
-						var x=imgh;
-						imgh=imgw;
-						imgw=x;
-					}
-					img=img_box.getElementsByTagName("img")[0]
-					
-					
-					console.log("w:"+imgw)
-					console.log("h:"+imgh)
-					
+						//宽高设置相反
+						img=img_box.getElementsByTagName("img")[0]
+						img.id="big"
+			        }
 					if(imgw > imgh) {
 						img_flag = false;
 						img_type = 1;
@@ -228,6 +243,7 @@ var uploader = new plupload.Uploader({
 		FileUploaded: function(up, file, info) {
 			if(info.status >= 200 || info.status < 200) {
 				imgUrl = host + '/' + activityPic + path + '?x-oss-process=image/crop,x_' + Math.ceil(position.x) + ',y_' + Math.ceil(position.y) + ',w_' + Math.ceil(position.w) + ',h_' + Math.ceil(position.w)
+				console.log(imgUrl)
 				//document.getElementById(file.id).getElementsByTagName('b')[0].innerHTML = 'success';
 			} else {
 				//document.getElementById(file.id).getElementsByTagName('b')[0].innerHTML = info.response;

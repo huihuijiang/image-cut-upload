@@ -121,7 +121,9 @@ a{
 }
 canvas{
 	position: absolute;
-	top:-100000px;
+	top:10000000px;
+	z-index:10;
+	width:100%;
 }
 #preview,#preview img{
 	width:100%;
@@ -169,4 +171,8 @@ canvas{
 	background-size:100%;
 	top:-3px;
 	right:-3px;
+}
+.btn_box{
+	position:absolute;
+	z-index:9;
 }
